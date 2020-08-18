@@ -1,7 +1,7 @@
 <template>
   <div>
 
-      112244
+      112
   </div>
 </template>
 
