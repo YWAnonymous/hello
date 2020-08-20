@@ -1,6 +1,6 @@
 <template>
   <div>
-      <h3>home </h3>
+      <h3>home ,您好登录主页</h3>
   </div>
 </template>
 
