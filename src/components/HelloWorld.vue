@@ -35,8 +35,14 @@ export default {
     };
   },
   methods: {
-    submitForm(){
-      
+    submitForm() {
+      let _this = this;
+      this.$http.post("login", this.loginForm).then(function(response) {
+        console.log(response);
+        if (response.data.meta.status == "200") {
+          _this.$router.push("/home");
+        }
+      });
     }
   }
 };
