@@ -18,7 +18,7 @@
                 :index="'/' + children.path"
                 v-for="children in menu.children"
                 :key="children.id"
-                @click="saveNavState('/' + subItem.path)"
+                @click="saveNavState('/' + children.path)"
               >
                 <template slot="title">{{ children.authName }}</template>
               </el-menu-item>
@@ -29,7 +29,6 @@
           <el-main>
             <router-view></router-view>
           </el-main>
-          <el-footer>Footer</el-footer>
         </el-container>
       </el-container>
     </el-container>
