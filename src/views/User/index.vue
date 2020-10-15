@@ -256,27 +256,7 @@ export default {
       this.queryInfo.pagenum = newSize;
       this.getUserList();
     },
-    // 添加用户
-    addUser() {
-      this.$refs.addUserFormRef.validate(valid => {
-        if (!valid) {
-          return;
-        }
-        this.$http.post("users", this.addUserForm).then(response => {
-          console.log(response.data);
-          if (response.data.meta.status != 201) {
-            return this.$message.error("添加用户失败！");
-          }
-          this.addUserDialog = false;
-          this.getUserList();
-        });
-      });
-    },
     // 监听 添加用户对话框的关闭事件
-    // 清空输入框数据
-    addDialogClosed() {
-      this.$refs.addUserFormRef.resetFields();
-    },
     // 修改用户信息
     showEditDialog(id) {
       this.$http.get("users/" + id).then(response => {
