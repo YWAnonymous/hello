@@ -19,7 +19,7 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="addUserDialog = true"
+          <el-button type="primary" @click="handlerAdd"
             >添加用户</el-button
           >
         </el-col>
@@ -81,36 +81,7 @@
     </el-card>
 
     <!-- 添加用户 -->
-    <el-dialog
-      title="添加用户"
-      @close="addDialogClosed"
-      :visible.sync="addUserDialog"
-      width="50%"
-    >
-      <el-form
-        :model="addUserForm"
-        :rules="addUserFormRules"
-        ref="addUserFormRef"
-        label-width="100px"
-      >
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="addUserForm.username"></el-input>
-        </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input v-model="addUserForm.password"></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="addUserForm.email"></el-input>
-        </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-          <el-input v-model="addUserForm.mobile"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="addUserDialog = false">取 消</el-button>
-        <el-button type="primary" @click="addUser">确 定</el-button>
-      </span>
-    </el-dialog>
+   <DialogAdd  :flag.sync="addUserDialog"></DialogAdd>
     <!-- 修改用户信息 -->
     <el-dialog
       title="修改客户信息"
@@ -168,8 +139,10 @@
 </template>
 
 <script>
+import DialogAdd from './dialog/add';
 export default {
   name: "User",
+  components:{ DialogAdd },
   data() {
     // 自定义邮箱规则
     var checkEmail = (rule, value, callback) => {
@@ -199,13 +172,7 @@ export default {
       total: 0,
       // 弹出增加用户框
       addUserDialog: false,
-      // 用户添加表单
-      addUserForm: {
-        username: "",
-        password: "",
-        email: "",
-        mobile: ""
-      },
+     
       // 修改客户信息
       editDialogVisible: false,
       // 修改客户信息表单
@@ -266,6 +233,9 @@ export default {
     this.getUserList();
   },
   methods: {
+    handlerAdd(){
+      this.addUserDialog = true;
+    },
     getUserList() {
       //获取账户列表
       this.$http.get("users", { params: this.queryInfo }).then(response => {
