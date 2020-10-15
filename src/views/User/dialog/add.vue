@@ -5,9 +5,8 @@
       :visible.sync="dialog_info_flag"
       @close="close"
       width="50%"
-      :rules="addUserFormRules"
     >
-      <el-form :model="addUserForm" ref="addUserFormRef" label-width="100px">
+      <el-form :model="addUserForm" :rules="addUserFormRules" ref="addUserFormRef" label-width="100px">
         <el-form-item label="用户名" prop="username">
           <el-input v-model="addUserForm.username"></el-input>
         </el-form-item>
@@ -99,8 +98,23 @@ export default {
     };
   },
   methods: {
-    addUser() {},
+   // 添加用户
+    addUser() {
+      this.$refs.addUserFormRef.validate(valid => {
+        if (!valid) {
+          return;
+        }
+        this.$http.post("users", this.addUserForm).then(response => {
+          console.log(response.data);
+          if (response.data.meta.status != 201) {
+            return this.$message.error("添加用户失败！");
+          }
+          this.close();
+        });
+      });
+    },
     close() {
+      this.$refs.addUserFormRef.resetFields();
       this.$emit("update:flag",false);
     }
   },
