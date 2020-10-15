@@ -108,8 +108,6 @@ export default {
   watch: {
     flag: {
       handler: function(newVal, oldVal) {
-        console.log("当前的值：" + newVal);
-        console.log("旧的值" + oldVal);
         this.dialog_info_flag = newVal;
       },
       deep: true //深度监听
