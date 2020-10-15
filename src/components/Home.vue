@@ -65,6 +65,7 @@ export default {
 <style scoped>
 .el-container {
   height: 100%;
+  background-color: #eaedf1;
 }
 .el-header {
   background-color: #373f41;
@@ -78,7 +79,5 @@ export default {
 .el-main {
   background-color: #eaedf1;
 }
-.el-aside {
-  background-color: #333744;
-}
+
 </style>
