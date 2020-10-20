@@ -110,6 +110,7 @@ export default {
             return this.$message.error("添加用户失败！");
           }
           this.close();
+          this.$emit("refreshTabelData");
         });
       });
     },

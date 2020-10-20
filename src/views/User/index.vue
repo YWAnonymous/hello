@@ -19,12 +19,10 @@
           </el-input>
         </el-col>
         <el-col :span="4">
-          <el-button type="primary" @click="handlerAdd"
-            >添加用户</el-button
-          >
+          <el-button type="primary" @click="handlerAdd">添加用户</el-button>
         </el-col>
       </el-row>
-      <el-table :data="userLists" border stripe>
+      <el-table :data="userLists" border stripe ref="userTable">
         <el-table-column type="index" label="#"></el-table-column>
         <el-table-column prop="username" label="姓名"></el-table-column>
         <el-table-column prop="email" label="邮箱"></el-table-column>
@@ -42,7 +40,7 @@
               icon="el-icon-edit"
               circle
               type="primary"
-              @click="showEditDialog(scope.row.id)"
+              @click="showEditDialog(scope.row)"
             ></el-button>
             <el-button
               size="mini"
@@ -81,34 +79,12 @@
     </el-card>
 
     <!-- 添加用户 -->
-   <DialogAdd  :flag.sync="addUserDialog"></DialogAdd>
+    <DialogAdd
+      :flag.sync="addUserDialog"
+      @refreshTabelData="refreshData"
+    ></DialogAdd>
     <!-- 修改用户信息 -->
-    <el-dialog
-      title="修改客户信息"
-      @close="editDialogClose"
-      :visible.sync="editDialogVisible"
-    >
-      <el-form
-        :model="editUserForm"
-        :rules="editUserFormRule"
-        ref="editUserFormRef"
-        label-width="100px"
-      >
-        <el-form-item label="用户名">
-          <el-input v-model="editUserForm.username" disabled></el-input>
-        </el-form-item>
-        <el-form-item label="邮箱" prop="email">
-          <el-input v-model="editUserForm.email"></el-input>
-        </el-form-item>
-        <el-form-item label="手机" prop="mobile">
-          <el-input v-model="editUserForm.mobile"></el-input>
-        </el-form-item>
-      </el-form>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="editDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="editUser">确 定</el-button>
-      </span>
-    </el-dialog>
+    <DialogEdit :editFlag.sync="editUserDialog" @refreshTabelData="refreshData" :editData="editData"></DialogEdit>
     <!-- 分配角色 -->
     <el-dialog
       title="分配角色"
@@ -139,87 +115,26 @@
 </template>
 
 <script>
-import DialogAdd from './dialog/add';
+import DialogAdd from "./dialog/add";
+import DialogEdit from "./dialog/edit";
+
 export default {
   name: "User",
-  components:{ DialogAdd },
+  components: { DialogAdd, DialogEdit },
   data() {
-    // 自定义邮箱规则
-    var checkEmail = (rule, value, callback) => {
-      const regEmail = /^\w+@\w+(\.\w+)+$/;
-      if (regEmail.test(value)) {
-        // 合法邮箱
-        return callback();
-      }
-      callback(new Error("请输入合法邮箱"));
-    };
-    // 自定义手机号规则
-    var checkMobile = (rule, value, callback) => {
-      const regMobile = /^1[34578]\d{9}$/;
-      if (regMobile.test(value)) {
-        return callback();
-      }
-      // 返回一个错误提示
-      callback(new Error("请输入合法的手机号码"));
-    };
     return {
       queryInfo: {
         query: "",
         pagenum: 1,
         pagesize: 5
       },
+      // 添加弹框
+      addUserDialog:false,
+      // 编辑弹框
+      editUserDialog:false,
+      editData:{},
       userLists: [],
       total: 0,
-      // 弹出增加用户框
-      addUserDialog: false,
-     
-      // 修改客户信息
-      editDialogVisible: false,
-      // 修改客户信息表单
-      editUserForm: {
-        username: "",
-        email: "",
-        mobile: ""
-      },
-      // 表单里规则
-      addUserFormRules: {
-        username: [
-          { required: true, message: "请输入用户名", trigger: "blur" },
-          {
-            min: 2,
-            max: 10,
-            message: "用户名的长度在2～10个字",
-            trigger: "blur"
-          }
-        ],
-        password: [
-          { required: true, message: "请输入密码", trigger: "blur" },
-          {
-            min: 6,
-            max: 18,
-            message: "用户密码的长度在6～18个字",
-            trigger: "blur"
-          }
-        ],
-        email: [
-          { required: "true", message: "请输入邮箱", trigger: "blur" },
-          { validator: checkEmail, trigger: "blur" }
-        ],
-        mobile: [
-          { required: "true", message: "请输入手机号码", trigger: "blur" },
-          { validator: checkMobile, trigger: "blur" }
-        ]
-      },
-      editUserFormRule: {
-        email: [
-          { required: "true", message: "请输入邮箱", trigger: "blur" },
-          { validator: checkEmail, trigger: "blur" }
-        ],
-        mobile: [
-          { required: "true", message: "请输入手机号码", trigger: "blur" },
-          { validator: checkMobile, trigger: "blur" }
-        ]
-      },
       // 分配角色弹出框
       setRoleDialogVisible: false,
       // 当前需要被分配角色的用户
@@ -233,7 +148,10 @@ export default {
     this.getUserList();
   },
   methods: {
-    handlerAdd(){
+    refreshData() {
+      this.getUserList();
+    },
+    handlerAdd() {
       this.addUserDialog = true;
     },
     getUserList() {
@@ -246,50 +164,22 @@ export default {
     },
     // 监听 pagesize改变的事件
     handleSizeChange(newSize) {
-      console.log(newSize)
+      console.log(newSize);
       this.queryInfo.pagesize = newSize;
       this.getUserList();
     },
     // 监听 页码值 改变事件
     handleCurrentChange(newSize) {
-      console.log(newSize)
+      console.log(newSize);
       this.queryInfo.pagenum = newSize;
       this.getUserList();
     },
-    // 监听 添加用户对话框的关闭事件
     // 修改用户信息
-    showEditDialog(id) {
-      this.$http.get("users/" + id).then(response => {
-        console.log(response.data);
-        if (response.data.meta.status != 200) {
-          return this.$message.error("查询用户信息失败！");
-        }
-        this.editUserForm = response.data.data;
-        this.editDialogVisible = true;
-      });
-    },
-    editUser() {
-      this.$refs.editUserFormRef.validate(valid => {
-        if (!valid) {
-          return;
-        }
-        this.$http
-          .put("users/" + this.editUserForm.id, {
-            email: this.editUserForm.email,
-            mobile: this.editUserForm.mobile
-          })
-          .then(response => {
-            console.log(response.data);
-            if (response.data.meta.status != 200) {
-              return this.$message.error("更新用户信息失败！");
-            }
-            this.editDialogVisible = false;
-            this.getUserList();
-          });
-      });
-    },
-    editDialogClose() {
-      this.$refs.editUserFormRef.resetFields();
+    showEditDialog(params) {
+      this.editUserDialog = true;
+      this.editData = Object.assign({}, params);
+      console.log(`editData`);
+      console.log(this.editData);
     },
     removeUserById(id) {
       this.$confirm("确认删除？", "系统提示", {
