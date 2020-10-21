@@ -115,6 +115,7 @@
 </template>
 
 <script>
+import { GetUserList } from '@/api/user.js';
 import DialogAdd from "./dialog/add";
 import DialogEdit from "./dialog/edit";
 
@@ -156,7 +157,7 @@ export default {
     },
     getUserList() {
       //获取账户列表
-      this.$http.get("users", { params: this.queryInfo }).then(response => {
+     GetUserList(this.queryInfo).then(response => {
         console.log(response.data);
         this.userLists = response.data.data.users;
         this.total = response.data.data.total;
