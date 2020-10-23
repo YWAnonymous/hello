@@ -31,6 +31,7 @@
 </template>
 
 <script>
+import { getUserById, putUserById } from "@/api/user";
 export default {
   name: "EditVue",
   props: {
@@ -60,7 +61,7 @@ export default {
   methods: {
     // 修改用户信息
     showEditDialog() {
-      this.$http.get("users/" + this.$props.editData.id).then(response => {
+      getUserById(this.$props.editData.id).then(response => {
         if (response.data.meta.status != 200) {
           return this.$message.error("查询用户信息失败！");
         }
@@ -76,18 +77,19 @@ export default {
         if (!valid) {
           return;
         }
-        this.$http
-          .put("users/" + this.editUserForm.id, {
+        putUserById({
+          id: this.editUserForm.id,
+          params: {
             email: this.editUserForm.email,
             mobile: this.editUserForm.mobile
-          })
-          .then(response => {
-            if (response.data.meta.status != 200) {
-              return this.$message.error("更新用户信息失败！");
-            }
-            this.close();
-            this.$emit("refreshTabelData");
-          });
+          }
+        }).then(response => {
+          if (response.data.meta.status != 200) {
+            return this.$message.error("更新用户信息失败！");
+          }
+          this.close();
+          this.$emit("refreshTabelData");
+        });
       });
     }
   },

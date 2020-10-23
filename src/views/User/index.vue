@@ -22,106 +22,47 @@
           <el-button type="primary" @click="handlerAdd">添加用户</el-button>
         </el-col>
       </el-row>
-      <el-table :data="userLists" border stripe ref="userTable">
-        <el-table-column type="index" label="#"></el-table-column>
-        <el-table-column prop="username" label="姓名"></el-table-column>
-        <el-table-column prop="email" label="邮箱"></el-table-column>
-        <el-table-column prop="mobile" label="电话"></el-table-column>
-        <el-table-column prop="role_name" label="角色"></el-table-column>
-        <el-table-column label="状态">
-          <template slot-scope="scope">
-            <el-switch v-model="scope.row.mg_state"> </el-switch>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作">
-          <template slot-scope="scope">
-            <el-button
-              size="mini"
-              icon="el-icon-edit"
-              circle
-              type="primary"
-              @click="showEditDialog(scope.row)"
-            ></el-button>
-            <el-button
-              size="mini"
-              type="danger"
-              circle
-              icon="el-icon-delete"
-              @click="removeUserById(scope.row.id)"
-            ></el-button>
-            <el-tooltip
-              class="item"
-              effect="dark"
-              content="角色分配"
-              :enterable="false"
-              placement="top"
-              ><el-button
-                size="mini"
-                type="warning"
-                circle
-                icon="el-icon-setting"
-                @click="showSetRole(scope.row)"
-              ></el-button>
-            </el-tooltip>
-          </template>
-        </el-table-column>
-      </el-table>
-      <!-- 分页区域 -->
-      <el-pagination
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentChange"
-        :current-page="queryInfo.pagenum"
-        :page-sizes="[2, 5, 10, 15]"
-        :page-size="queryInfo.pagesize"
-        layout="total, sizes, prev, pager, next, jumper"
-        :total="total"
-      ></el-pagination>
+      <!-- table区域 -->
+      <TableVue :config="configTable">
+        <template v-slot:mg_state="slotData">
+          <el-switch v-model="slotData.data.status"></el-switch>
+        </template>
+        <template v-slot:operation="slotData">
+          <el-button
+            size="small"
+            type="danger"
+            @click="removeUserById(slotData.data.id)"
+            >删除</el-button
+          >
+          <el-button
+            size="small"
+            type="success"
+            @click="showEditDialog(slotData.data)"
+            >编辑</el-button
+          >
+        </template>
+      </TableVue>
     </el-card>
 
     <!-- 添加用户 -->
-    <DialogAdd
-      :flag.sync="addUserDialog"
-      @refreshTabelData="refreshData"
-    ></DialogAdd>
+    <DialogAdd :flag.sync="addUserDialog"></DialogAdd>
     <!-- 修改用户信息 -->
-    <DialogEdit :editFlag.sync="editUserDialog" @refreshTabelData="refreshData" :editData="editData"></DialogEdit>
-    <!-- 分配角色 -->
-    <el-dialog
-      title="分配角色"
-      :visible.sync="setRoleDialogVisible"
-      width="50%"
-      @close="setRoleDialogClosed"
-    >
-      <P>当前用户：{{ userInfo.username }}</P>
-      <P>当前角色：{{ userInfo.role_name }}</P>
-      <p>
-        分配角色：
-        <el-select v-model="selectRoleId" placeholder="请选择">
-          <el-option
-            v-for="item in rolesLsit"
-            :key="item.id"
-            :label="item.roleName"
-            :value="item.id"
-          >
-          </el-option>
-        </el-select>
-      </p>
-      <span slot="footer" class="dialog-footer">
-        <el-button @click="setRoleDialogVisible = false">取 消</el-button>
-        <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
-      </span>
-    </el-dialog>
+    <DialogEdit
+      :editFlag.sync="editUserDialog"
+      :editData="editData"
+    ></DialogEdit>
   </div>
 </template>
 
 <script>
-import { GetUserList } from '@/api/user.js';
+import { deleteUserById } from "@/api/user.js";
 import DialogAdd from "./dialog/add";
 import DialogEdit from "./dialog/edit";
+import TableVue from "../../components/Table/index";
 
 export default {
   name: "User",
-  components: { DialogAdd, DialogEdit },
+  components: { DialogAdd, DialogEdit, TableVue },
   data() {
     return {
       queryInfo: {
@@ -130,50 +71,57 @@ export default {
         pagesize: 5
       },
       // 添加弹框
-      addUserDialog:false,
+      addUserDialog: false,
       // 编辑弹框
-      editUserDialog:false,
-      editData:{},
+      editUserDialog: false,
+      editData: {},
       userLists: [],
       total: 0,
-      // 分配角色弹出框
-      setRoleDialogVisible: false,
-      // 当前需要被分配角色的用户
-      userInfo: {},
-      rolesLsit: [],
-      // 分配角色的角色id
-      selectRoleId: ""
+      configTable: {
+        // table组件配置参数
+        tHead: [
+          {
+            label: "邮箱/用户名",
+            field: "username",
+            width: 200
+          },
+          {
+            label: "手机号",
+            field: "mobile"
+          },
+          {
+            label: "角色",
+            field: "role_name"
+          },
+          {
+            label: "禁启用状态",
+            field: "mg_state",
+            columnType: "slot",
+            slotName: "mg_state"
+          },
+          {
+            label: "操作",
+            columnType: "slot",
+            slotName: "operation"
+          }
+        ],
+        // 请求接口URL
+        requestData: {
+          url: "/users/",
+          method: "get",
+          data: {
+            query: "",
+            pagenum: 1,
+            pagesize: 5
+          }
+        }
+      }
     };
   },
-  created() {
-    this.getUserList();
-  },
+  created() {},
   methods: {
-    refreshData() {
-      this.getUserList();
-    },
     handlerAdd() {
       this.addUserDialog = true;
-    },
-    getUserList() {
-      //获取账户列表
-     GetUserList(this.queryInfo).then(response => {
-        console.log(response.data);
-        this.userLists = response.data.data.users;
-        this.total = response.data.data.total;
-      });
-    },
-    // 监听 pagesize改变的事件
-    handleSizeChange(newSize) {
-      console.log(newSize);
-      this.queryInfo.pagesize = newSize;
-      this.getUserList();
-    },
-    // 监听 页码值 改变事件
-    handleCurrentChange(newSize) {
-      console.log(newSize);
-      this.queryInfo.pagenum = newSize;
-      this.getUserList();
     },
     // 修改用户信息
     showEditDialog(params) {
@@ -194,45 +142,16 @@ export default {
           if (response !== "confirm") {
             return this.$message.info("已取消删除");
           }
-          this.$http.delete("users/" + id).then(resp => {
+         deleteUserById(id).then(resp => {
             if (resp.data.meta.status != 200) {
               return this.$message.error("删除用户失败！");
             }
             this.$message.success("删除用户成功！");
-            this.getUserList();
           });
         })
         .catch(err => {
           console.log(err);
         });
-    },
-    //分配角色
-    showSetRole(role) {
-      console.log(role);
-      this.userInfo = role;
-      this.$http.get("roles").then(response => {
-        console.log(response.data);
-        this.rolesLsit = response.data.data;
-      });
-      this.setRoleDialogVisible = true;
-    },
-    saveRoleInfo() {
-      this.$http
-        .put(`users/${this.userInfo.id}/role`, {
-          rid: this.selectRoleId
-        })
-        .then(response => {
-          console.log(response);
-          if (response.data.meta.status != 200) {
-            return this.$message.error("更新用户角色失败!");
-          }
-          this.getUserList();
-          this.setRoleDialogVisible = false;
-        });
-    },
-    setRoleDialogClosed() {
-      this.selectRoleId = "";
-      this.userInfo = {};
     }
   }
 };
