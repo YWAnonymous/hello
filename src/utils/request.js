@@ -7,7 +7,7 @@ import { Message } from "element-ui";
 
 // 创建axios，赋给变量service
 const service = axios.create({
-    baseURL: 'http://127.0.0.1:8888/api/private/v1/',
+    baseURL: 'http://localhost:8989/springboot/',
     timeout: 15000,
   });
 

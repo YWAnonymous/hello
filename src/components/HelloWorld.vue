@@ -39,8 +39,8 @@ export default {
     submitForm() {
       let _this = this;
       Login( this.loginForm).then(function(response) {
-        console.log(response);
-        if (response.data.meta.status == "200") {
+        console.log(response.data);
+        if (response.data.status == "200") {
           console.log(response.data.data.token);
           sessionStorage.setItem("token", response.data.data.token);
           _this.$router.push("/home");
