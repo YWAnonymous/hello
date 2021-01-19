@@ -36,6 +36,7 @@
 </template>
 
 <script>
+import { getMenu } from '@/api/login.js';
 export default {
   name: "Home",
   data() {
@@ -53,7 +54,7 @@ export default {
   },
   created() {
     let _this = this;
-    this.$http.get("menus").then(function(response) {
+    getMenu().then((response)=> {
       console.log(response.data.data);
       _this.menus = response.data.data;
     });

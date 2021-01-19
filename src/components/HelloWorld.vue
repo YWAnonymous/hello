@@ -24,6 +24,7 @@
 </template>
 
 <script>
+import { Login } from '@/api/login.js'
 export default {
   name: "HelloWorld",
   data() {
@@ -37,9 +38,9 @@ export default {
   methods: {
     submitForm() {
       let _this = this;
-      this.$http.post("login", this.loginForm).then(function(response) {
-        console.log(response);
-        if (response.data.meta.status == "200") {
+      Login( this.loginForm).then(function(response) {
+        console.log(response.data);
+        if (response.data.status == "200") {
           console.log(response.data.data.token);
           sessionStorage.setItem("token", response.data.data.token);
           _this.$router.push("/home");
