@@ -17,6 +17,7 @@ service.interceptors.request.use(function (config) {
   console.log(config)
   // 为请求头对象，添加token验证的Authorization字段
   config.headers.Authorization = window.sessionStorage.getItem('token')
+  console.log("token===>"+config.headers.Authorization)
   // 在最后必须 return config
   return config;
 });
